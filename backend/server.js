@@ -36,7 +36,7 @@ app.get("/api/users", async (req, res) => {
     const users = await collection.find().toArray();
     res.json(users);
   } catch (error) {
-    res.status(500).send("Error retrieving users");
+    res.status(500).send("Error retrieving users :",error);
   }
 });
 
