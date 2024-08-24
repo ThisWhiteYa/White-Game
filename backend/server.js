@@ -4,23 +4,23 @@ const { MongoClient,ServerApiVersion  } = require("mongodb");
 const cors = require("cors"); // Import the cors middleware
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT|| 5000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
-app.use(
-  cors({
-    origin: "*", // Allow all origins, you can configure this based on your needs
-  })
-);
+// app.use(
+//   cors({
+//     origin: "*", // Allow all origins, you can configure this based on your needs
+//   })
+// );
 // MongoDB URI and client
-const uri = "mongodb+srv://white:123456789zaza@cluster0.zxzpg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const uri = process.env.MONGOBD_CONNECT_URL;
 let client;
 
 async function connectToDatabase() {
   client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
-    useNewUrlParser: true,
+    // useNewUrlParser: true,
     useUnifiedTopology: true,
   });
   await client.connect();
