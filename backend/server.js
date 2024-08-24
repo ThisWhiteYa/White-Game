@@ -30,6 +30,13 @@ async function connectToDatabase() {
 connectToDatabase().catch(console.error);
 
 // Get all users
+app.get("/", async (req, res) => {
+  try {
+    res.send("api connected");
+  } catch (error) {
+    res.status(500).send("Error :",error);
+  }
+});
 app.get("/api/users", async (req, res) => {
   try {
     const collection = client.db("GameWord").collection("username");
