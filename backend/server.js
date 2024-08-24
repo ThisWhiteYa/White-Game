@@ -18,9 +18,9 @@ const uri = process.env.MONGOBD_CONNECT_URL;
 let client;
 
 async function connectToDatabase() {
-  client = new MongoClient(uri, {
+  serverApi = new MongoClient(uri, {
     version: ServerApiVersion.v1,
-    // useNewUrlParser: true,
+    useNewUrlParser: true,
     useUnifiedTopology: true,
   });
   await client.connect();
