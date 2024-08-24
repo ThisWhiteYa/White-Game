@@ -1,10 +1,10 @@
 // import
 const express = require("express");
-const { MongoClient,ServerApiVersion  } = require("mongodb");
+const { MongoClient, ServerApiVersion } = require("mongodb");
 const cors = require("cors"); // Import the cors middleware
 
 const app = express();
-const port = process.env.PORT|| 5000;
+const port = process.env.PORT || 5000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -15,15 +15,19 @@ app.use(express.json());
 // );
 // MongoDB URI and client
 const uri = process.env.MONGOBD_CONNECT_URL;
-let client;
 
 async function connectToDatabase() {
-  serverApi = new MongoClient(uri, {
-    version: ServerApiVersion.v1,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  await client.connect();
+  try {
+    client = new MongoClient(uri, {
+      version: ServerApiVersion.v1,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    await client.connect();
+    return client;
+  } catch (error) {
+    console.error("Error connecting to MongoDB:", error);
+  }
 }
 
 // Connect to MongoDB
@@ -32,18 +36,18 @@ connectToDatabase().catch(console.error);
 // Get all users
 app.get("/", async (req, res) => {
   try {
-    res.send("api connected");
+    res.status(200).send("api connected");
   } catch (error) {
-    res.status(500).send("Error :",error);
+    res.status(500).send("Error :", error);
   }
 });
 app.get("/api/users", async (req, res) => {
   try {
     const collection = client.db("GameWord").collection("username");
     const users = await collection.find().toArray();
-    res.json(users);
+    res.status(200).json(users);
   } catch (error) {
-    res.status(500).send("Error retrieving users :",error);
+    res.status(500).send("Error retrieving users :", error);
   }
 });
 
@@ -56,7 +60,7 @@ app.get("/api/users/:id", async (req, res) => {
       _id: new MongoClient.ObjectId(id),
     });
     if (document) {
-      res.json(document);
+      res.status(200).json(document);
     } else {
       res.status(404).send("Document not found");
     }
@@ -128,7 +132,7 @@ app.put("/api/users/:id", async (req, res) => {
       { $set: updatedUsername }
     );
     if (result.modifiedCount > 0) {
-      res.send("Username updated");
+      res.status(200).send("Username updated");
     } else {
       res.status(404).send("Username not found");
     }
@@ -146,7 +150,7 @@ app.delete("/api/users/:id", async (req, res) => {
       _id: new MongoClient.ObjectId(id),
     });
     if (result.deletedCount > 0) {
-      res.send("Username deleted");
+      res.status(200).send("Username deleted");
     } else {
       res.status(404).send("Username not found");
     }
