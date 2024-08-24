@@ -22,6 +22,9 @@ async function connectToDatabase() {
       serverApi: ServerApiVersion.v1,
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      tls: true, // Enable TLS
+      tlsAllowInvalidCertificates: false, // Set to true if using self-signed certificates
+      tlsInsecure: false, // Set to true if you want to bypass certain SSL validations
     });
     await client.connect();
     return client;
