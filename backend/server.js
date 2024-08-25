@@ -1,20 +1,19 @@
-// import
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require("mongodb");
-const cors = require("cors"); // Import the cors middleware
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const cors = require("cors");
 
 const app = express();
 const port = process.env.PORT || 5000;
+let client;
 
-// Middleware to parse JSON bodies
 app.use(express.json());
-// app.use(
-//   cors({
-//     origin: "*", // Allow all origins, you can configure this based on your needs
-//   })
-// );
-// MongoDB URI and client
-const uri = process.env.MONGOBD_CONNECT_URL;
+app.use(
+  cors({
+    origin: "*",
+  })
+);
+
+const uri = process.env.MONGODB_CONNECT_URL;
 
 async function connectToDatabase() {
   try {
@@ -22,53 +21,48 @@ async function connectToDatabase() {
       serverApi: ServerApiVersion.v1,
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      tls: true, // Enable TLS
-      tlsAllowInvalidCertificates: false, // Set to true if using self-signed certificates
-      tlsInsecure: false, // Set to true if you want to bypass certain SSL validations
+      tls: true,
+      tlsAllowInvalidCertificates: false,
+      tlsInsecure: false,
     });
     await client.connect();
-    return client;
+    console.log("Connected to MongoDB");
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
+    process.exit(1); // Exit process with failure
   }
 }
 
-// Connect to MongoDB
-connectToDatabase().catch(console.error);
-
-// Get all users
 app.get("/", async (req, res) => {
   try {
-    res.status(200).send("api connected");
+    res.status(200).send("API connected");
   } catch (error) {
-    res.status(500).send("Error :", error);
+    res.status(500).send(`Error: ${error.message}`);
   }
 });
+
 app.get("/api/users", async (req, res) => {
   try {
     const collection = client.db("GameWord").collection("username");
     const users = await collection.find().toArray();
     res.status(200).json(users);
   } catch (error) {
-    res.status(500).send("Error retrieving users :", error);
+    res.status(500).send(`Error retrieving users: ${error.message}`);
   }
 });
 
-// Get a single document by ID
 app.get("/api/users/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const collection = client.db("GameWord").collection("username");
-    const document = await collection.findOne({
-      _id: new MongoClient.ObjectId(id),
-    });
+    const document = await collection.findOne({ _id: new ObjectId(id) });
     if (document) {
       res.status(200).json(document);
     } else {
       res.status(404).send("Document not found");
     }
   } catch (error) {
-    res.status(500).send("Error retrieving document");
+    res.status(500).send(`Error retrieving document: ${error.message}`);
   }
 });
 
@@ -78,90 +72,76 @@ app.post("/api/users/auth", async (req, res) => {
     const pin = req.body.pin;
     const collection = client.db("GameWord").collection("username");
     const findeName = await collection.find({ name: nameCheck }).toArray();
-    console.log("findeName :", findeName);
-    console.log("pin :", pin);
-    console.log("findeName.pin :", findeName[0].pin);
-    console.log(findeName[0].pin == pin);
-
-    if (!findeName[0].pin) {
-      console.log("New Account");
+    
+    if (!findeName[0]?.pin) {
       await collection.updateOne({ name: nameCheck }, { $set: { pin: pin } });
       res.status(200).send("NewAccount success");
     } else {
-      if (findeName[0].pin == pin) {
-        console.log("Old Account");
-        res.status(200).send("success");
+      if (findeName[0].pin === pin) {
+        res.status(200).send("Success");
       } else {
-        console.log("Wrong");
-        res.status(200).send("wrong");
+        res.status(400).send("Wrong PIN");
       }
     }
   } catch (error) {
-    res.status(500).send("Error retrieving document");
+    res.status(500).send(`Error authenticating: ${error.message}`);
   }
 });
 
-// Create a new document
 app.post("/api/users", async (req, res) => {
   try {
     const newUser = req.body;
     const nameCheck = req.body.name.toLowerCase();
     const collection = client.db("GameWord").collection("username");
     const findeName = await collection.find().toArray();
-    const nameList = [];
-    findeName.forEach((user) => {
-      nameList.push(user.name.toLowerCase());
-    });
-    const check = nameList.includes(nameCheck);
-    if (!check) {
+    const nameList = findeName.map(user => user.name.toLowerCase());
+    
+    if (!nameList.includes(nameCheck)) {
       await collection.insertOne(newUser);
-      res.status(200).json("Created");
+      res.status(201).json("Created");
     } else {
-      res.status(200).json("Username is already");
+      res.status(409).json("Username already exists");
     }
   } catch (error) {
-    res.status(500).send("Error creating username");
+    res.status(500).send(`Error creating username: ${error.message}`);
   }
 });
 
-// Update a username by ID
 app.put("/api/users/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const updatedUsername = req.body;
     const collection = client.db("GameWord").collection("username");
-    const result = await collection.updateOne(
-      { _id: new MongoClient.ObjectId(id) },
-      { $set: updatedUsername }
-    );
+    const result = await collection.updateOne({ _id: new ObjectId(id) }, { $set: updatedUsername });
+    
     if (result.modifiedCount > 0) {
       res.status(200).send("Username updated");
     } else {
       res.status(404).send("Username not found");
     }
   } catch (error) {
-    res.status(500).send("Error updating username");
+    res.status(500).send(`Error updating username: ${error.message}`);
   }
 });
 
-// Delete a username by ID
 app.delete("/api/users/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const collection = client.db("GameWord").collection("username");
-    const result = await collection.deleteOne({
-      _id: new MongoClient.ObjectId(id),
-    });
+    const result = await collection.deleteOne({ _id: new ObjectId(id) });
+    
     if (result.deletedCount > 0) {
       res.status(200).send("Username deleted");
     } else {
       res.status(404).send("Username not found");
     }
   } catch (error) {
-    res.status(500).send("Error deleting username");
+    res.status(500).send(`Error deleting username: ${error.message}`);
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+connectToDatabase().then(() => {
+  app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+  });
+}).catch(console.error);
