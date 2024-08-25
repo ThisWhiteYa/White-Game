@@ -116,7 +116,7 @@ app.put("/api/users/:id", async (req, res) => {
     
     if (result.modifiedCount > 0) {
       res.status(200).send("Username updated");
-    } else {
+    } else {  
       res.status(404).send("Username not found");
     }
   } catch (error) {
