@@ -51,20 +51,20 @@ app.get("/api/users", async (req, res) => {
   }
 });
 
-app.get("/api/users/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-    const collection = client.db("GameWord").collection("username");
-    const document = await collection.findOne({ _id: new ObjectId(id) });
-    if (document) {
-      res.status(200).json(document);
-    } else {
-      res.status(404).send("Document not found");
-    }
-  } catch (error) {
-    res.status(500).send(`Error retrieving document: ${error.message}`);
-  }
-});
+// app.get("/api/users/:id", async (req, res) => {
+//   try {
+//     const id = req.params.id;
+//     const collection = client.db("GameWord").collection("username");
+//     const document = await collection.findOne({ _id: new ObjectId(id) });
+//     if (document) {
+//       res.status(200).json(document);
+//     } else {
+//       res.status(404).send("Document not found");
+//     }
+//   } catch (error) {
+//     res.status(500).send(`Error retrieving document: ${error.message}`);
+//   }
+// });
 
 app.post("/api/users/auth", async (req, res) => {
   try {
