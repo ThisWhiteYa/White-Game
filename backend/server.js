@@ -14,7 +14,7 @@ app.use(express.json());
 //   })
 // );
 // MongoDB URI and client
-const uri = process.env.MONGOBD_CONNECT_URL;
+const uri = "mongodb+srv://nantakornthidee:RULu0pjtRFSg9KAl@gameword.zxzpg.mongodb.net/?retryWrites=true&w=majority&appName=GameWord"
 
 async function connectToDatabase() {
   try {
@@ -22,9 +22,6 @@ async function connectToDatabase() {
       serverApi: ServerApiVersion.v1,
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      tls: true, // Enable TLS
-      tlsAllowInvalidCertificates: false, // Set to true if using self-signed certificates
-      tlsInsecure: false, // Set to true if you want to bypass certain SSL validations
     });
     await client.connect();
     return client;
