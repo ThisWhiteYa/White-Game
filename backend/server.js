@@ -13,7 +13,7 @@ app.use(
   })
 );
 
-const uri = process.env.MONGODB_CONNECT_URL;
+const uri = `${process.env.MONGODB_CONNECT_URL}`;
 
 async function connectToDatabase() {
   try {
