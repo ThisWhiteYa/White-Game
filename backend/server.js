@@ -17,6 +17,7 @@ app.use(express.json());
 const uri =
   "mongodb+srv://nantakornthidee:BsmYumujmmRRrCwd@gameword.zxzpg.mongodb.net/?retryWrites=true&w=majority&appName=GameWord";
 
+// Connect MongoDB With mongodb Lib
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -25,9 +26,7 @@ const client = new MongoClient(uri, {
   },
 });
 async function run() {
-  // Connect the client to the server	(optional starting in v4.7)
   await client.connect();
-  // Send a ping to confirm a successful connection
   await client.db("admin").command({ ping: 1 });
   console.log("Pinged your deployment. You successfully connected to MongoDB!");
 }
@@ -52,22 +51,22 @@ app.get("/api/users", async (req, res) => {
 });
 
 // // Get a single document by ID
-// app.get("/api/users/:id", async (req, res) => {
-//   try {
-//     const id = req.params.id;
-//     const collection = client.db("GameWord").collection("username");
-//     const document = await collection.findOne({
-//       _id: new MongoClient.ObjectId(id),
-//     });
-//     if (document) {
-//       res.status(200).json(document);
-//     } else {
-//       res.status(404).send("Document not found");
-//     }
-//   } catch (error) {
-//     res.status(500).send("Error retrieving document");
-//   }
-// });
+app.get("/api/users/:name", async (req, res) => {
+  try {
+    const name = (req.params.name).toLocaleLowerCase();
+    const collection = client.db("GameWord").collection("username");
+    const document = await collection.findOne({
+      user: name,
+    });
+    if (document) {
+      res.status(200).json(document);
+    } else {
+      res.status(404).send("Document not found");
+    }
+  } catch (error) {
+    res.status(500).send("Error retrieving document");
+  }
+});
 
 // app.post("/api/users/auth", async (req, res) => {
 //   try {
