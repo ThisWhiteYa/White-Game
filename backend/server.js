@@ -2,17 +2,17 @@
 const express = require("express");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const cors = require("cors"); // Import the cors middleware
-
+const passHash = require("./passwordHash");
 const app = express();
 const port = process.env.PORT || 5000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
-// app.use(
-//   cors({
-//     origin: "*", // Allow all origins, you can configure this based on your needs
-//   })
-// );
+app.use(
+  cors({
+    origin: "*", // Allow all origins, you can configure this based on your needs
+  })
+);
 // MongoDB URI and client
 const uri =
   "mongodb+srv://nantakornthidee:BsmYumujmmRRrCwd@gameword.zxzpg.mongodb.net/?retryWrites=true&w=majority&appName=GameWord";
@@ -53,70 +53,85 @@ app.get("/api/users", async (req, res) => {
 // // Get a single document by ID
 app.get("/api/users/:name", async (req, res) => {
   try {
-    const name = (req.params.name).toLocaleLowerCase();
+    const users = req.params.name.toLocaleLowerCase();
     const collection = client.db("GameWord").collection("username");
-    const document = await collection.findOne({
-      user: name,
+    const username = await collection.findOne({
+      name: { $regex: `^${users}$`, $options: "i" },
     });
-    if (document) {
-      res.status(200).json(document);
+    if (username) {
+      res.status(200).json(username);
     } else {
-      res.status(404).send("Document not found");
+      res.status(404).send("username not found");
     }
   } catch (error) {
-    res.status(500).send("Error retrieving document");
-  }
-});
-
-app.post("/api/users/auth", async (req, res) => {
-  try {
-    const nameCheck = req.body.name.toLowerCase();
-    const pin = req.body.pin;
-    const collection = client.db("GameWord").collection("username");
-    const findeName = await collection.find({ name: nameCheck }).toArray();
-    console.log("findeName :", findeName);
-    console.log("pin :", pin);
-    console.log("findeName.pin :", findeName[0].pin);
-    console.log(findeName[0].pin == pin);
-
-    if (!findeName[0].pin) {
-      console.log("New Account");
-      await collection.updateOne({ name: nameCheck }, { $set: { pin: pin } });
-      res.status(200).send("NewAccount success");
-    } else {
-      if (findeName[0].pin == pin) {
-        console.log("Old Account");
-        res.status(200).send("success");
-      } else {
-        console.log("Wrong");
-        res.status(200).send("wrong");
-      }
-    }
-  } catch (error) {
-    res.status(500).send("Error retrieving document");
+    res.status(500).send("Error retrieving username");
   }
 });
 
 // Create user
 app.post("/api/create", async (req, res) => {
   try {
-    const newUser = req.body.name;
-    const nameCheck = req.body.name.toLowerCase();
+    const newUser = req.body;
+    const lowerCaseName = req.body.name.toLowerCase();
     const collection = client.db("GameWord").collection("username");
-    const findeName = await collection.find().toArray();
-    const nameList = [];
-    findeName.forEach((user) => {
-      nameList.push(user.name.toLowerCase());
+    const username = await collection.findOne({
+      name: { $regex: `^${lowerCaseName}$`, $options: "i" },
     });
-    const check = nameList.includes(nameCheck);
-    if (!check) {
+    if (!username) {
       await collection.insertOne(newUser);
       res.status(200).json("Created");
     } else {
-      res.status(200).json("Username is already");
+      res.status(200).json(username.name);
     }
   } catch (error) {
-    res.status(500).send("Error creating username :",error.message);
+    res
+      .status(500)
+      .json({ error: `Error creating username: ${error.message}` });
+  }
+});
+
+app.post("/api/users/auth", async (req, res) => {
+  try {
+    const hash = req.body.hash;
+    const user = req.body.name;
+    const userLower = req.body.name.toLowerCase();
+    const pin = req.body.pin;
+    const pinHash = await passHash.hashPassword(pin); // Hash password
+    const collection = client.db("GameWord").collection("username");
+    const username = await collection.findOne({
+      name: { $regex: `^${userLower}$`, $options: "i" },
+    });
+
+    if (hash) {
+      console.log("Have hash");
+
+      res.status(200).send("Check Token");
+    } else {
+      if (!username.pin) {
+        await collection.updateOne({ name: user }, { $set: { pin: pinHash } });
+        const username = await collection.findOne({
+          name: { $regex: `^${userLower}$`, $options: "i" },
+        });
+        console.log("New Account :",username);
+        res.status(200).send({"token":`${pinHash}`,"message":"NewAccount success"});
+      }
+      else {
+        const userPassword = await collection.findOne({
+          name: { $regex: `^${userLower}$`, $options: "i" },
+        });
+        const verify = await passHash.verifyPassword(userPassword.pin,pin)
+        
+        if (verify) {
+          console.log("Old Account");
+          res.status(200).json({"token":`${userPassword.pin}`,"message":"success"});
+        } else {
+          console.log("Wrong");
+          res.status(200).send("wrong");
+        }
+      }
+    }
+  } catch (error) {
+    res.status(500).send("Error retrieving document");
   }
 });
 
