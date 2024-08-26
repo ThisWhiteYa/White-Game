@@ -116,7 +116,7 @@ app.post("/api/users", async (req, res) => {
       res.status(200).json("Username is already");
     }
   } catch (error) {
-    res.status(500).send("Error creating username");
+    res.status(500).send("Error creating username :",error.message);
   }
 });
 
