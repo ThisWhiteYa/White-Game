@@ -98,7 +98,7 @@ app.get("/api/users/:name", async (req, res) => {
 // });
 
 // // Create a new document
-app.post("/api/users", async (req, res) => {
+app.post("/api/create", async (req, res) => {
   try {
     const newUser = req.body.name;
     const nameCheck = req.body.name.toLowerCase();
