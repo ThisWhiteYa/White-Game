@@ -68,57 +68,57 @@ app.get("/api/users/:name", async (req, res) => {
   }
 });
 
-// app.post("/api/users/auth", async (req, res) => {
-//   try {
-//     const nameCheck = req.body.name.toLowerCase();
-//     const pin = req.body.pin;
-//     const collection = client.db("GameWord").collection("username");
-//     const findeName = await collection.find({ name: nameCheck }).toArray();
-//     console.log("findeName :", findeName);
-//     console.log("pin :", pin);
-//     console.log("findeName.pin :", findeName[0].pin);
-//     console.log(findeName[0].pin == pin);
+app.post("/api/users/auth", async (req, res) => {
+  try {
+    const nameCheck = req.body.name.toLowerCase();
+    const pin = req.body.pin;
+    const collection = client.db("GameWord").collection("username");
+    const findeName = await collection.find({ name: nameCheck }).toArray();
+    console.log("findeName :", findeName);
+    console.log("pin :", pin);
+    console.log("findeName.pin :", findeName[0].pin);
+    console.log(findeName[0].pin == pin);
 
-//     if (!findeName[0].pin) {
-//       console.log("New Account");
-//       await collection.updateOne({ name: nameCheck }, { $set: { pin: pin } });
-//       res.status(200).send("NewAccount success");
-//     } else {
-//       if (findeName[0].pin == pin) {
-//         console.log("Old Account");
-//         res.status(200).send("success");
-//       } else {
-//         console.log("Wrong");
-//         res.status(200).send("wrong");
-//       }
-//     }
-//   } catch (error) {
-//     res.status(500).send("Error retrieving document");
-//   }
-// });
+    if (!findeName[0].pin) {
+      console.log("New Account");
+      await collection.updateOne({ name: nameCheck }, { $set: { pin: pin } });
+      res.status(200).send("NewAccount success");
+    } else {
+      if (findeName[0].pin == pin) {
+        console.log("Old Account");
+        res.status(200).send("success");
+      } else {
+        console.log("Wrong");
+        res.status(200).send("wrong");
+      }
+    }
+  } catch (error) {
+    res.status(500).send("Error retrieving document");
+  }
+});
 
-// // Create a new document
-// app.post("/api/create", async (req, res) => {
-//   try {
-//     const newUser = req.body.name;
-//     const nameCheck = req.body.name.toLowerCase();
-//     const collection = client.db("GameWord").collection("username");
-//     const findeName = await collection.find().toArray();
-//     const nameList = [];
-//     findeName.forEach((user) => {
-//       nameList.push(user.name.toLowerCase());
-//     });
-//     const check = nameList.includes(nameCheck);
-//     if (!check) {
-//       await collection.insertOne(newUser);
-//       res.status(200).json("Created");
-//     } else {
-//       res.status(200).json("Username is already");
-//     }
-//   } catch (error) {
-//     res.status(500).send("Error creating username :",error.message);
-//   }
-// });
+// Create user
+app.post("/api/create", async (req, res) => {
+  try {
+    const newUser = req.body.name;
+    const nameCheck = req.body.name.toLowerCase();
+    const collection = client.db("GameWord").collection("username");
+    const findeName = await collection.find().toArray();
+    const nameList = [];
+    findeName.forEach((user) => {
+      nameList.push(user.name.toLowerCase());
+    });
+    const check = nameList.includes(nameCheck);
+    if (!check) {
+      await collection.insertOne(newUser);
+      res.status(200).json("Created");
+    } else {
+      res.status(200).json("Username is already");
+    }
+  } catch (error) {
+    res.status(500).send("Error creating username :",error.message);
+  }
+});
 
 // // Update a username by ID
 // app.put("/api/users/:id", async (req, res) => {
