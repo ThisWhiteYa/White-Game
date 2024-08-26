@@ -52,6 +52,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
+        // target: 'https://white-game-backend.onrender.com', // URL of your Express backend
         target: 'http://localhost:5000', // URL of your Express backend
         changeOrigin: true,
       },

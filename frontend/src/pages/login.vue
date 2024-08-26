@@ -1,38 +1,34 @@
 <script setup>
 import { useUserStore } from "@/store/userStore";
+import { useUserAuthStore } from "@/store/userAuthStore";
 import { ref, watchEffect } from "vue";
 import { useRouter } from "vue-router";
 const router = useRouter();
-
 const useUser = useUserStore();
 const username = ref("");
-// Get cookie data
-const cookie_check = document.cookie
-  .split("; ")
-  .find((row) => row.startsWith("username="))
-  ?.split("=")[1];
+const useAuth = useUserAuthStore();
 
-useUser.onCookie = cookie_check;
+useAuth.getUser();
+
 const enterData = (e) => {
   if (e.key === "Enter") {
     create();
   }
 };
+
 const create = () => {
   console.log("Created");
   useUser.createUser(username.value);
   router.push({ name: "auth" });
-  // 
   username.value = "";
 };
-console.log("cookie_check :", cookie_check);
 
 watchEffect(() => {
-  username.value = username.value.toLowerCase();
-  if (useUser.onCookie) {
+  if (useAuth.user) {
     router.push({ name: "auth" });
   }
 });
+
 </script>
 <template>
   <div class="card">
@@ -40,7 +36,6 @@ watchEffect(() => {
       <div class="title">Username</div>
       <p class="sub-title">*** lower case only ***</p>
     </div>
-
     <div class="input-form">
       <input
         type="text"

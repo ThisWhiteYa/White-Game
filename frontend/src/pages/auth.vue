@@ -1,46 +1,32 @@
 <script setup>
-import { useUserStore } from "@/store/userStore";
+import { useUserAuthStore } from "@/store/userAuthStore";
 import { ref, watchEffect } from "vue";
 import { useRouter } from "vue-router";
 import { PinInput } from "v-pin-input";
 const router = useRouter();
-const useUser = useUserStore();
+const useAuth = useUserAuthStore();
 
 const model = ref("");
 
-const handleCompleted = async (val) => {
-  await useUser.auth(val);
-  // let pass = val
-  const auth_check = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith("onLogin="))
-    ?.split("=")[1];
-  // var hashObj = new jsSHA("SHA-512", "TEXT", { numRounds: 1 });
-  // hashObj.update(pass);
-  // var hash = hashObj.getHash("HEX");
-  // pass = hash;
-  
-  // console.log(pass);
+useAuth.getUser();
 
-  // if (auth_check) {
-  //   router.push({ name: "home" });
-  // }
+const handleCompleted = async (val) => {
+  await useAuth.auth(val);
+  console.log("Done");
 };
 
-const cookie_check = document.cookie
-  .split("; ")
-  .find((row) => row.startsWith("username="))
-  ?.split("=")[1];
-useUser.onCookie = cookie_check;
+const test = async () => {
+  const res = await useAuth.getToken();
+  console.log("res :", res);
+};
 
 const logout = () => {
-  console.log("useUser.onCookie :", useUser.onCookie);
-  document.cookie = `username=${useUser.onCookie}; expires=Sun, 20 Aug 2000 12:00:00 UTC`;
+  document.cookie = `username=${useAuth.user}; expires=Sun, 20 Aug 2000 12:00:00 UTC`;
   location.reload();
 };
 
 watchEffect(() => {
-  if (!useUser.onLogin && !useUser.onCookie) {
+  if (!useAuth.user) {
     router.push({ name: "login" });
   }
 });
@@ -48,7 +34,7 @@ watchEffect(() => {
 <template>
   <div class="card">
     <div class="title">
-      <h1>Hi {{ useUser.onLogin || useUser.onCookie }}</h1>
+      <h1>Hi {{ useAuth.user }}</h1>
       <p>PIN</p>
     </div>
     <pin-input
@@ -64,6 +50,7 @@ watchEffect(() => {
       @completed="handleCompleted"
     />
     <v-btn @click="logout">Logout</v-btn>
+    <v-btn @click="test">Test</v-btn>
   </div>
 </template>
 
