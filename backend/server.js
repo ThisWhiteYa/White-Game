@@ -100,7 +100,7 @@ app.get("/api/users/:name", async (req, res) => {
 // // Create a new document
 app.post("/api/users", async (req, res) => {
   try {
-    const newUser = req.body;
+    const newUser = req.body.name;
     const nameCheck = req.body.name.toLowerCase();
     const collection = client.db("GameWord").collection("username");
     const findeName = await collection.find().toArray();
