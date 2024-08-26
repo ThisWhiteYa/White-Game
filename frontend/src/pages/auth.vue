@@ -12,12 +12,12 @@ useAuth.getUser();
 
 const handleCompleted = async (val) => {
   await useAuth.auth(val);
-  console.log("Done");
+  // console.log("Done");
 };
 
 const test = async () => {
   const res = await useAuth.getToken();
-  console.log("res :", res);
+  // console.log("res :", res);
 };
 
 const logout = () => {

@@ -10,14 +10,14 @@ export const useUserAuthStore = defineStore("userAuth", {
     async auth(pin) {
       this.pass = pin;
       this.getUser();
-      console.log("name :", this.user);
-      console.log("pin :", pin);
+      // console.log("name :", this.user);
+      // console.log("pin :", pin);
       const res = await axios.post("/api/users/auth", {
         name: this.user,
         pin: `${pin}`,
         hash: this.token || null,
       });
-      console.log("res.data :", res.data);
+      // console.log("res.data :", res.data);
 
       if (res.data.message == "success") {
         Swal.fire({
@@ -66,12 +66,12 @@ export const useUserAuthStore = defineStore("userAuth", {
         .split("; ")
         .find((row) => row.startsWith("username="))
         ?.split("=")[1];
-      console.log("this.userCookie :", this.userCookie);
+      // console.log("this.userCookie :", this.userCookie);
       if (this.userCookie) {
         this.user = (
           await axios.get(`/api/users/${this.userCookie}`)
         ).data.name;
-        console.log("this.user :", this.user);
+        // console.log("this.user :", this.user);
       }
     },
   },

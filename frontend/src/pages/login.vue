@@ -17,7 +17,7 @@ const enterData = (e) => {
 };
 
 const create = () => {
-  console.log("Created");
+  // console.log("Created");
   useUser.createUser(username.value);
   router.push({ name: "auth" });
   username.value = "";
